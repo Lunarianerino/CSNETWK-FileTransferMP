@@ -67,7 +67,7 @@ class SocketThread(threading.Thread):
                 #tokenize file name with this format [Date][Time][Uploader][File Name including extension]
                 #example: [2023-11-17][16-48-05][John][Hello World]
                 tokens = f.replace('[', '').replace(']', '\n').split('\n')
-                file = { #dict might be used for GUI but apparently CLI only needs to display file name and I may have overdone things
+                file = { #I wanted to use this dict for GUI but apparently CLI only needs to display file name and I may have overdone things
                     "Date": tokens[0],
                     "Time": tokens[1].replace('-', ':'),
                     "Uploader": tokens[2],
