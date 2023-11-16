@@ -51,6 +51,6 @@ if __name__ == "__main__":
                 if client != None:
                     client.sendMessage(text)
         except Exception as e:
-            print(e)
+            print("Connection to the Server has failed! Please check IP Address and Port Number.")
 
         
