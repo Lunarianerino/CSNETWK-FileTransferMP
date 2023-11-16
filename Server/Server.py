@@ -3,6 +3,7 @@ from socket import *
 import sys # In order to terminate the program
 import threading
 import time
+import os
 class SocketThread(threading.Thread):
     def __init__(self, connection):
         threading.Thread.__init__(self)
@@ -50,14 +51,36 @@ class SocketThread(threading.Thread):
             }
             self.server.addName(name)
             self.connectionSocket.send("200 OK".encode())
+            self.connectionSocket.send(f"Welcome {args[0]}".encode())
             print(self.server.getNames())
 
         elif command == "?":
             self.connectionSocket.send("200 OK".encode())
             self.connectionSocket.send("Commands:\n/join <server_ip_add> <port>\n/leave\n/register <handle>\n/store <filename>\n/dir\n/get <filename>\n/?".encode())
 
-        # elif command == "dir":
-
+        elif command == "dir":
+            #get the list of files in /Server/Files
+            directory = './Server/Files'
+            files = os.listdir(directory)
+            file_list = [] #list of dicts for each file
+            for f in files:
+                #tokenize file name with this format [Date][Time][Uploader][File Name including extension]
+                #example: [2023-11-17][16-48-05][John][Hello World]
+                tokens = f.replace('[', '').replace(']', '\n').split('\n')
+                file = { #dict might be used for GUI but apparently CLI only needs to display file name and I may have overdone things
+                    "Date": tokens[0],
+                    "Time": tokens[1].replace('-', ':'),
+                    "Uploader": tokens[2],
+                    "Name": ''.join(tokens[3:]),
+                    "Size": str(os.path.getsize(directory + '/' + f)) + " Bytes"
+                }
+                file_list.append(file)
+            print(file_list)
+            self.connectionSocket.send("200 OK".encode())
+            self.connectionSocket.send("Server Directory\n".encode())
+            for filename in file_list: # TODO: change this to sending the entire object instead of just the name once GUI is implemented
+                self.connectionSocket.send(f"{filename['Name']}\n".encode())
+                
         #elif command == "msg":
 
 
