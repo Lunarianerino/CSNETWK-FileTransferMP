@@ -15,6 +15,8 @@ class SocketThread(threading.Thread):
         self.Names = list()
         self.timeout = 5 #seconds
         self.connectionSocket.send("200 OK|Connection to the File Exchange Server is successful!".encode())
+        self.path = os.getcwd()
+        print(self.path)
     def run(self):
         i = 0
         while True:
@@ -105,7 +107,7 @@ class SocketThread(threading.Thread):
             if len(args[0]) > 0:
                 self.connectionSocket.send("400 BAD_REQUEST|Error: Command parameters do not match or is not allowed.".encode())
                 return
-            directory = r'./Server/Files'
+            directory = self.path + r'/Files/'
             files = os.listdir(directory)
             file_list = [] #list of dicts for each file
             for f in files:
@@ -124,7 +126,7 @@ class SocketThread(threading.Thread):
                 return
             filename = " ".join(args[0])
             
-            directory = r'./Server/Files/'
+            directory = self.path + r'/Files/'
             files = os.listdir(directory)
 
             #if file exists, send file
@@ -133,7 +135,7 @@ class SocketThread(threading.Thread):
                 status, message = self.statusHandler(self.connectionSocket.recv(1024).decode())
                 if status != "200 OK":
                     return
-                f = open(f"./Server/Files/{filename}", 'rb')
+                f = open(directory + filename, 'rb')
                 data = f.read()
                 self.connectionSocket.send(data)
                 f.close()
@@ -188,10 +190,10 @@ class SocketThread(threading.Thread):
             # #self.connectionSocket.send("File has been uploaded".encode())
             # #checking for duplicate files
             i = 1
-            if os.path.exists(f"./Server/Files/{filename}"): #aaron pic.jpg
+            if os.path.exists(self.path + f"/Files/{filename}"): #aaron pic.jpg
                 ext = filename.split(".")[-1] #.jpg
                 filename = ".".join(filename.split(".")[:-1]) #aaron pic
-                while os.path.exists(f"./Server/Files/{filename}({i}).{ext}"): #aaron pic(1).jpg
+                while os.path.exists(self.path + f"/Files/{filename}({i}).{ext}"): #aaron pic(1).jpg
                     i+=1
                 filename = f"{filename}({i})" + "." + str(ext)
 
@@ -203,8 +205,8 @@ class SocketThread(threading.Thread):
             }
 
             try:
-                open(f"./Server/Files/{filename}", 'x')
-                f = open(f"./Server/Files/{filename}", 'wb')
+                open(self.path + f"/Files/{filename}", 'x')
+                f = open(self.path + f"/Files/{filename}", 'wb')
 
                 totalRecv = 0
 
@@ -232,15 +234,44 @@ class SocketThread(threading.Thread):
 
             #append file to FileList.json (Will be used for GUI)
             try:
-                with open('./Server/Storage/FileList.json', 'r') as f:
+                with open(self.path + '/Storage/FileList.json', 'r') as f:
                     data = json.load(f)
             except json.decoder.JSONDecodeError:
                 data = []
             data.append(file)
-            with open('./Server/Storage/FileList.json', 'w') as f:
+            with open(self.path + '/Storage/FileList.json', 'w') as f:
                 json.dump(data, f)
-        #elif command == "msg":
+        elif command == "msg":
+            print(f"Checking user: {self.connectionSocket.getpeername()[1]}")
+            user = self.checkHandle(self.connectionSocket.getpeername()[1])
+            print(f"user: {user}")
+            if user == None:
+                self.connectionSocket.send("401 UNAUTHORIZED|You must first use /register to access this command. Enter /? for more details.".encode())
+                return
+            
+            query = " ".join(args[0])
+            query = query.split("|")
 
+            if len(query) < 2:
+                self.connectionSocket.send("400 BAD REQUEST|Error: Command parameters do not match or is not allowed.".encode())
+                return
+
+            recipient = query[0]
+            message = query[1]
+
+            if (not any(name["Name"] == recipient for name in self.server.getNames())):
+                self.connectionSocket.send("404 NOT FOUND|Error: Recipient not found.".encode())
+                return
+
+            for name in self.server.getNames():
+                if name["Name"] == recipient:
+                    port = name["Port"]
+                    break
+            
+            for connection in self.server.ActiveConnections:
+                if connection.connectionSocket.getpeername()[1] == port:
+                    connection.send(f"200 OK|{user} <{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}>: {message}")
+                    break
         else:
             self.connectionSocket.send("400 BAD REQUEST|Error: Command not found.".encode())
             return
