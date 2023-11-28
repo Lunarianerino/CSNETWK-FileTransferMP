@@ -71,9 +71,7 @@ class SocketThread(threading.Thread):
                 self.connectionSocket.send("401 UNAUTHORIZED|You must first use /register to access this command. Enter /? for more details.".encode())
                 return
 
-            
             self.server.broadcast(args[0])
-            self.connectionSocket.send("200 OK".encode())
 
         elif command == "register":
             #check if args[0] exists
@@ -282,9 +280,9 @@ class Server:
             print(e)
             self.ServerSocket.close()
 
-    def broadcast(self, message):
+    def broadcast(self, *args):
         for i in range(len(self.ActiveConnections)):
-            self.ActiveConnections[i].send(message)
+            self.ActiveConnections[i].send("209 BROADCAST|"+" ".join(args[0]))
     def addName(self, name):
         self.Names.append(name)
         

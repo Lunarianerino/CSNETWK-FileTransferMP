@@ -2,35 +2,10 @@ import re
 import tkinter as tk
 from tkinter import ttk
 
+import sys
+sys.path.append('./Client')
+from Client import Client
 
-class Model:
-    def __init__(self, email):
-        self.email = email
-
-    @property
-    def email(self):
-        return self.__email
-
-    @email.setter
-    def email(self, value):
-        """
-        Validate the email
-        :param value:
-        :return:
-        """
-        pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
-        if re.fullmatch(pattern, value):
-            self.__email = value
-        else:
-            raise ValueError(f'Invalid email address: {value}')
-
-    def save(self):
-        """
-        Save the email into a file
-        :return:
-        """
-        with open('emails.txt', 'a') as f:
-            f.write(self.email + '\n')
 
 class View(ttk.Frame):
     def __init__(self, parent):
@@ -228,14 +203,14 @@ class View(ttk.Frame):
 
 
 class Controller:
-    def __init__(self, model, view):
-        self.model = model
+    def __init__(self, client, view):
         self.view = view
 
     def join(self, ip_add, host):
         try:
-            self.model.ip_add = ip_add
-            self.model.host = host
+            #create a client instance
+            client = Client(ip_add, host)
+            client.connect(client.HOST, client.PORT)
 
             #show a success message
             self.view.show_success(f'Connection to the File Exchange Server is successful!')
@@ -275,16 +250,15 @@ class App(tk.Tk):
         super().__init__()
 
         self.title('FTP Server')
-
-        # create a model
-        model = Model('hello@pythontutorial.net')
+        # create a client instance
+        self.client = None
 
         # create a view and place it on the root window
         view = View(self)
         view.grid(row=0, column=0, padx=10, pady=10)
 
         # create a controller
-        controller = Controller(model, view)
+        controller = Controller(self.client, view)
 
         # set the controller to view
         view.set_controller(controller)
