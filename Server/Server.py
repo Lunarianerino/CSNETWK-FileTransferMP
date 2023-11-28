@@ -16,9 +16,6 @@ class SocketThread(threading.Thread):
         self.timeout = 5 #seconds
         self.connectionSocket.send("200 OK|Connection to the File Exchange Server is successful!".encode())
         self.path = os.getcwd()
-        
-        if(self.path.split('\\')[-1] != "Server"):
-            self.path = self.path + "\\Server"
             
             
         print(self.path)
@@ -234,7 +231,7 @@ class SocketThread(threading.Thread):
                 self.connectionSocket.send("409 CONFLICT|Something went wrong while receiving data...".encode())
                 return
             
-            self.server.broadcast(f"200 OK|{file['Uploader']} <{file['DateTime']}>: Uploaded {file['Name']}".encode())
+            self.server.broadcast(f"200 OK|{file['Uploader']} <{file['DateTime']}>: Uploaded {file['Name']}")
             #FIXME: CHANGE TO BROADCAST (SHOULD BE SEEN BY ALL CLIENTS)
 
             #append file to FileList.json (Will be used for GUI)
