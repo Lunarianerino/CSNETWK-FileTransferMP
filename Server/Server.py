@@ -16,6 +16,11 @@ class SocketThread(threading.Thread):
         self.timeout = 5 #seconds
         self.connectionSocket.send("200 OK|Connection to the File Exchange Server is successful!".encode())
         self.path = os.getcwd()
+        
+        if(self.path.split('\\')[-1] != "Server"):
+            self.path = self.path + "\\Server"
+            
+            
         print(self.path)
     def run(self):
         i = 0
@@ -109,7 +114,7 @@ class SocketThread(threading.Thread):
                 return
             directory = self.path + r'/Files/'
             files = os.listdir(directory)
-            file_list = [] #list of dicts for each file
+            self.file_list = [] #list of dicts for each file
             for f in files:
                 file_list.append({"Name": f})
             print(file_list)
@@ -229,7 +234,7 @@ class SocketThread(threading.Thread):
                 self.connectionSocket.send("409 CONFLICT|Something went wrong while receiving data...".encode())
                 return
             
-            self.connectionSocket.send(f"200 OK|{file['Uploader']} <{file['DateTime']}>: Uploaded {file['Name']}".encode())
+            self.server.broadcast(f"200 OK|{file['Uploader']} <{file['DateTime']}>: Uploaded {file['Name']}".encode())
             #FIXME: CHANGE TO BROADCAST (SHOULD BE SEEN BY ALL CLIENTS)
 
             #append file to FileList.json (Will be used for GUI)

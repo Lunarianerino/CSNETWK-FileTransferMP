@@ -5,19 +5,22 @@ import threading
 import os
 import argparse
 import time
+import select
 class Client():
     def __init__(self, HOST = None, PORT = None):
         self.HOST = HOST
         self.PORT = PORT
         self.connection_flag = False
+        self.message_thread = threading.Thread(target=self.run, daemon=True)
+        self.kill_thread = False
+        self.path = os.getcwd()
+        
+        self.handle = None
+        
+        if(self.path.split('\\')[-1] != "Client"):
+            self.path = self.path + "\\Client"
         #self.start()
-    
-    def response_test(self):
-        print("FUCK")
-        print(self.HOST)
-        print(self.PORT)
-        
-        
+
     def connect(self, HOST, PORT):
         self.HOST = HOST
         self.PORT = PORT
@@ -31,21 +34,34 @@ class Client():
         self.buffer_size = 1024
         self.timeout = 5
         self.connection_flag = True
+
         return True
 
     def run(self):
-        while self.connection_flag == False:
-            continue #Do nothing until connection is established
-
         while self.connection_flag:
-            print("Waiting for reply...")
+            #print("Waiting for reply...")
             try:
-                reply = self.clientEndpoint.recv(self.buffer_size).decode()
-                self.HandleStatus(reply)
+                ready = select.select([self.clientEndpoint], [], [], 0.1)
+                if ready[0]:
+                    reply = self.clientEndpoint.recv(self.buffer_size).decode()
+                    self.HandleStatus(reply)
             except Exception as e:
                 print(e)
                 break  
 
+            if self.kill_thread:
+                break
+    def start_message_thread(self):
+        if not self.message_thread.is_alive() and self.connection_flag:
+            self.message_thread = threading.Thread(target=self.run, daemon=True)
+            self.kill_thread = False
+            self.message_thread.start()
+            print("Message thread started")
+    def kill_message_thread(self):
+        if self.message_thread.is_alive() and self.connection_flag:
+            self.kill_thread = True
+            self.message_thread.join()
+            print("Message thread has been killed.")
     def sendMessage(self, *args):
         message = " ".join(args)
         print(message)
@@ -65,6 +81,9 @@ class Client():
         print(message)
         return status, message
     def commandHandler(self, command, *args):
+        if command != "/broadcast":
+            self.kill_message_thread()
+
         if command == "/join":
 
             #check if args is greater than 2
@@ -86,6 +105,7 @@ class Client():
                 print("Error: Registration failed. Please connect to the server first.")
                 return
             handle = " ".join(args[0])
+            self.handle = handle
             self.sendMessage(command, handle)
             status, message = self.HandleStatus(self.clientEndpoint.recv(self.buffer_size).decode())
         elif command == "/leave":
@@ -153,16 +173,16 @@ class Client():
                 filesize = int(message)
                 self.sendMessage("200 OK|File size received")
                 i = 1
-                if os.path.exists(f"./Downloads/{filename}"): #aaron pic.jpg
+                if os.path.exists(f"{self.path}/Downloads/{filename}"): #aaron pic.jpg
                     ext = filename.split(".")[-1] #.jpg
                     filename = ".".join(filename.split(".")[:-1]) #aaron pic
-                    while os.path.exists(f"./Downloads/{filename}({i}).{ext}"): #aaron pic(1).jpg
+                    while os.path.exists(f"{self.path}/Downloads/{filename}({i}).{ext}"): #aaron pic(1).jpg
                         i+=1
                     filename = f"{filename}({i})" + "." + str(ext)
 
 
-                open(f"./Downloads/{filename}", 'x')
-                f = open(f"./Downloads/{filename}", 'wb')
+                open(f"{self.path}/Downloads/{filename}", 'x')
+                f = open(f"{self.path}/Downloads/{filename}", 'wb')
 
                 totalRecv = 0
 
@@ -197,6 +217,8 @@ class Client():
             self.HandleStatus(reply)
             # self.sendMessage(args[0][0])
             # self.sendFile(args[0][0])
+        
+        self.start_message_thread()
             
 if __name__ == "__main__":
     client = Client()
