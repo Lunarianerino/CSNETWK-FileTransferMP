@@ -3,6 +3,8 @@ import tkinter as tk
 from tkinter import ttk
 import json
 import tkinter.messagebox as messagebox
+import os
+import sys
 
 import sys
 sys.path.append('./Client')
@@ -109,6 +111,9 @@ class View(ttk.Frame):
         self.download_button.pack()
         
     
+    def getClientFiles(self):
+        files = os.listdir("./Client/Uploads")
+        return files
     
     def upload_view(self):
         self.upload_window = tk.Toplevel(self)
@@ -119,13 +124,17 @@ class View(ttk.Frame):
         
         self.filename_label = ttk.Label(self.upload_window, text='Filename: ')
         self.file_var = tk.StringVar()
-        self.handle_entry = ttk.Entry(self.upload_window, textvariable=self.file_var, width=30)
+
+        self.file_list = self.getClientFiles()
+        self.file_var.set(self.file_list[0])
+        self.handle_dropdown = ttk.OptionMenu(self.upload_window, self.file_var, *self.file_list)
+        
         
         self.upload_button = ttk.Button(self.upload_window, text='Upload', command=self.upload_file)
         
         #pack widgets
         self.filename_label.pack()
-        self.handle_entry.pack()
+        self.handle_dropdown.pack()
         self.upload_button.pack()
         
         
@@ -338,6 +347,7 @@ class Controller:
             
     def upload(self, filename):
         try:
+            filename = f"Client/Uploads/{filename}"
             self.client.commandHandler("/store", [filename])
             
             #refresh the file list

@@ -231,10 +231,9 @@ class SocketThread(threading.Thread):
                 self.connectionSocket.send("409 CONFLICT|Something went wrong while receiving data...".encode())
                 return
             
-            self.server.broadcast(f"200 OK|{file['Uploader']} <{file['DateTime']}>: Uploaded {file['Name']}")
-            #FIXME: CHANGE TO BROADCAST (SHOULD BE SEEN BY ALL CLIENTS)
+            self.server.broadcast(f"{file['Uploader']} <{file['DateTime']}>: Uploaded {file['Name']}")
+            self.connectionSocket.send(f"200 OK|File received by Server: {filename}".encode())
 
-            #append file to FileList.json (Will be used for GUI)
             try:
                 with open(self.path + '/Storage/FileList.json', 'r') as f:
                     data = json.load(f)
@@ -315,7 +314,7 @@ class Server:
 
     def broadcast(self, *args):
         for i in range(len(self.ActiveConnections)):
-            self.ActiveConnections[i].send("209 BROADCAST|"+" ".join(args[0]))
+            self.ActiveConnections[i].send("209 BROADCAST|"+" ".join([args[0]]))
     def addName(self, name):
         self.Names.append(name)
         
