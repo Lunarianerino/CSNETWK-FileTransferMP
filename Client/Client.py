@@ -81,6 +81,10 @@ class Client():
         print(message)
         return status, message
     def commandHandler(self, command, *args):
+        commands = ["/join", "/register", "/leave", "/store", "/dir", "/get", "/broadcast", "/?", "/msg"]
+        if command not in commands:
+            print("Error: Command not found. Please use /? to view all commands.")
+            return
         if command != "/broadcast":
             self.kill_message_thread()
 
