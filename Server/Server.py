@@ -272,6 +272,7 @@ class SocketThread(threading.Thread):
             for connection in self.server.ActiveConnections:
                 if connection.connectionSocket.getpeername()[1] == port:
                     connection.send(f"200 OK|{user} <{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}>: {message}")
+                    self.connectionSocket.send(f"200 OK|Message sent to {recipient}.".encode())
                     break
         else:
             self.connectionSocket.send("400 BAD REQUEST|Error: Command not found.".encode())
