@@ -12,6 +12,8 @@ from Client import Client
 
 import threading
 
+import webbrowser
+
 class View(ttk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
@@ -247,8 +249,7 @@ class View(ttk.Frame):
         self.controller = controller
 
     def help_button_clicked(self):
-        #redirect to a link
-        import webbrowser
+        #redirects to the github repo readme.md file
         webbrowser.open('https://github.com/Lunarianerino/CSNETWK-FileTransferMP/blob/main/README.md')
         
         
