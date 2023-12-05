@@ -48,6 +48,10 @@ class View(ttk.Frame):
         # join button
         self.join_button = ttk.Button(self, text='Join', command=self.join_button_clicked)
         self.join_button.grid(row=8, column=1, sticky=tk.NSEW)
+        
+        # help button
+        self.help_button = ttk.Button(self, text='Help', command=self.help_button_clicked)
+        self.help_button.grid(row=9, column=1, sticky=tk.NSEW)
 
         # message
         self.message_label = ttk.Label(self, text='', foreground='red')
@@ -239,23 +243,22 @@ class View(ttk.Frame):
         self.button_area.grid(row=2, column=0, pady=10)
 
     def set_controller(self, controller):
-        """
-        Set the controller
-        :param controller:
-        :return:
-        """
+
         self.controller = controller
 
+    def help_button_clicked(self):
+        #redirect to a link
+        import webbrowser
+        webbrowser.open('https://github.com/Lunarianerino/CSNETWK-FileTransferMP/blob/main/README.md')
+        
+        
+        
     def join_button_clicked(self):
         if self.controller:
             self.controller.join(self.ip_var.get(), self.host_var.get())
 
     def show_error(self, message):
-        """
-        Show an error message
-        :param message:
-        :return:
-        """
+        
         self.message_label['text'] = message
         self.message_label['foreground'] = 'red'
         self.message_label.after(3000, self.hide_message)
