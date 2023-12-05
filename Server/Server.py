@@ -116,7 +116,7 @@ class SocketThread(threading.Thread):
                 self.file_list.append({"Name": f})
             print(self.file_list)
             string_to_send=""
-            for filename in self.file_list: # TODO: change this to sending the entire object instead of just the name once GUI is implemented
+            for filename in self.file_list: 
                 string_to_send = string_to_send + f"{filename['Name']}\n"
             
             self.connectionSocket.send(("200 OK|Server Directory: \n" + string_to_send).encode())
@@ -151,7 +151,6 @@ class SocketThread(threading.Thread):
 
         elif command == "store":
 
-            #TODO: insert check here if user has registered
             print(f"Checking user: {self.connectionSocket.getpeername()[1]}")
             user = self.checkHandle(self.connectionSocket.getpeername()[1])
             print(f"user: {user}")

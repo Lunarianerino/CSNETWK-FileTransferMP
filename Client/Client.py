@@ -239,7 +239,6 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             print("Closing connection...")
             break
-            #TODO: might have to implement a list of errors for easy error messages in GUI
         except Exception as e:
             print (e)
     print("Process interrupted")
