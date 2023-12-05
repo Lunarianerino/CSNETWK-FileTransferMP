@@ -22,4 +22,6 @@ py Client.py
 py View.py
 ```
 
+If there is a need to clear /Server/Files , make sure to also clear the list of files in FileList.json (for GUI implementation)
+
 

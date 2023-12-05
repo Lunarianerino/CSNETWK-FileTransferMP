@@ -113,10 +113,10 @@ class SocketThread(threading.Thread):
             files = os.listdir(directory)
             self.file_list = [] #list of dicts for each file
             for f in files:
-                file_list.append({"Name": f})
-            print(file_list)
+                self.file_list.append({"Name": f})
+            print(self.file_list)
             string_to_send=""
-            for filename in file_list: # TODO: change this to sending the entire object instead of just the name once GUI is implemented
+            for filename in self.file_list: # TODO: change this to sending the entire object instead of just the name once GUI is implemented
                 string_to_send = string_to_send + f"{filename['Name']}\n"
             
             self.connectionSocket.send(("200 OK|Server Directory: \n" + string_to_send).encode())
@@ -231,7 +231,7 @@ class SocketThread(threading.Thread):
                 self.connectionSocket.send("409 CONFLICT|Something went wrong while receiving data...".encode())
                 return
             
-            self.server.broadcast(f"{file['Uploader']} <{file['DateTime']}>: Uploaded {file['Name']}")
+            self.server.broadcast([f"{file['Uploader']} <{file['DateTime']}>: Uploaded {file['Name']}"])
             self.connectionSocket.send(f"200 OK|File received by Server: {filename}".encode())
 
             try:
@@ -314,8 +314,19 @@ class Server:
             self.ServerSocket.close()
 
     def broadcast(self, *args):
+        #remove the space between the args
+        args = args[0]
+        #obtain name based on port
+        name = ""
+        for name in self.Names:
+            if str(name["Port"]) == str(self.ActiveConnections[0].connectionSocket.getpeername()[1]):
+                name = name["Name"]
+                break
+        #get the datetime
+        datetime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        print(args)
         for i in range(len(self.ActiveConnections)):
-            self.ActiveConnections[i].send("209 BROADCAST|"+" ".join([args[0]]))
+            self.ActiveConnections[i].send("209 BROADCAST|"+ f"[BROADCAST]: {name} <{datetime}>: " +" ".join(args))
     def addName(self, name):
         self.Names.append(name)
         

@@ -212,9 +212,6 @@ class View(ttk.Frame):
         self.files_table.heading('Size', text='Size')
         self.files_table.heading('DateTime', text='DateTime')
         self.files_table.heading('Uploader', text='Uploader')
-
-
-        #TODO: replace with a function from the model that would return these values.
         
         file_list = self.getFileList()
         
@@ -305,8 +302,7 @@ class Controller:
             self.view.register_view()
             messagebox.showinfo("Connected", "You have successfully connected to the server.")
 
-        except ValueError as error: #FIXME: change the exception
-            #TODO: Show an error message
+        except ValueError as error:
             print(error)
 
 
@@ -316,7 +312,6 @@ class Controller:
 
     def register(self, handle):
         try:
-            #TODO: INSERT CLIENT CODE HERE
             self.client.commandHandler("/register", [handle])
 
 
